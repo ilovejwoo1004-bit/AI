@@ -1,0 +1,61 @@
+=============================================
+## MongoDB 설치 ##
+=============================================
+
+# 다운로드
+  - “mongodb.com/try/download/community”접속
+  - Windows Installer(.msi) 다운로드
+    >> More Option > Archived releases > Msi: mongodb-windows-x86_64-5.0.33-signed.msi
+
+
+# 설치 과정
+  - “Complete” 설치 선택
+  - 기본설치 경로 : C:\Program Files\MongoDB\Server\<버전>\bin
+  - “Install MongoDB as a Service” 체크
+  - “MongoDB Compass” 설치 선택 가능 (GUI 기반 MongoDB 관리 툴)
+
+
+=============================================
+## 환경 변수 설정 ##
+=============================================
+
+# 탐색기에서:
+C:\Program Files\MongoDB\Server\<버전>\bin 경로 복사
+
+# 시스템 환경 변수 편집:
+
+# Windows 검색 → 환경 변수 → 시스템 환경 변수 편집
+
+# 시스템 변수 영역의 Path 선택 → 편집
+
+# 새로 만들기 → MongoDB bin 경로 붙여넣기 → 확인
+                       : C:\Program Files\MongoDB\Server\<버전>\bin
+
+=============================================
+## 설치 확인 ##
+=============================================
+
+# 터미널 재실행 후 설치 확인
+   > mongod --version
+   > mongo --version
+
+# 데이터 저장 폴더 생성 (기본적으로 해당 경로 이용)
+   > mkdir C:\data\db
+
+   * 데이터 폴더 경로 직접 지정하는 경우
+   > mongod --dbpath C:\data\db
+
+# MongoDB 서버 실행
+   > mongod
+
+=============================================
+## Python 환경 설정 및 MongoDB 연결 ##
+=============================================
+“이제 Python에서 MongoDB에 연결하는 환경을 구성하겠습니다. pymongo 패키지를 설치하고, 기본 연결을 테스트합니다.”
+
+
+
+
+
+
+
