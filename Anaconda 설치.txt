@@ -1,0 +1,33 @@
+
+1. Anaconda 설치 
+  : https://www.anaconda.com/download/success
+    - Window Distribution Installers 다운
+
+2. 가상환경 설치
+  # pip 업그레이드
+     >> python -m pip install --upgrade pip
+  # conda 가상 환경 
+     >> conda create -n ai(<--아이디명) python=3.10   
+     >> conda info --envs (가상환경 설치 확인)
+  # 가상환경 활성화
+     >> activate ai
+
+3. 분석 라이브러리 설치
+    - pip install matplotlib //시각화
+    - pip install seaborn  //시각화
+    - pip install numpy // 데이터처리
+    - pip install pandas // 데이터 처리
+    - pip install scikit-learn // 분석
+    - pip list <--설치버전확인
+
+4. Jupyter notebook 설치
+    >> conda install jupyter notebook
+    
+* 가상환경 conda 확인 및 삭제
+       - conda info --envs /*아나콘다 환경 확인하기*/
+       - conda remove --name 삭제하려는환경이름 --all /*아나콘다 환경 삭제하기*/
+
+
+-Window 트레이에서 anaconda3>jupyter notebook(생성한 id명) 실행
+-바탕화면에 workspace 폴더 생성하고, jupyter notebook에서 해당 경로
+에서 파이썬 파일 생성
