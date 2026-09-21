@@ -1,0 +1,125 @@
+## kafka 기본 구조
+
+                    Producer
+                        │
+                        │ 메시지 전송 
+
+                   ZooKeeper
+                        │
+                  Kafka 상태 관리
+                        │
+                        ▼
+                   Kafka Broker
+                        │
+             ┌──────────┴──────────┐
+             │                     │
+          Topic A               Topic B
+             │
+      ┌──────┼──────┐
+      │      │      │
+     P0     P1     P2
+      │      │      │
+      ▼      ▼      ▼
+   Message Message Message
+      │
+      │
+   Offset
+  0,1,2,3...
+      ▲
+      │
+   Consumer
+      ▲
+      │
+ Consumer Group
+
+
+Producer
+   │
+   │ 메시지 전송
+   └──────────────→ Kafka
+--------------------------------------------------------------------------------------------
+
+- Producer : Producer는 Kafka로 데이터를 전송하는 프로그램 --> 설비의 센서
+- Consumer : 데이터를 받는 프로그램 --> ai 이상탐지 프로그램(추론모듈)
+- Broker : Broker는 Producer로부터 받은 데이터를 저장하고 Consumer에게 전달 (kafka 서버)--> localhost:9092
+- Topic : 데이터를 분류하는 논리적인 통로 --> 토픽 name 정의
+- Partition — Topic을 실제로 나누어 저장하는 단위
+- Offset — 메시지의 위치
+- message : 실제 전송 데이터  --> 온도, 진동, 힘....
+- zookeeper : broker정보를 관리하는 역할
+
+
+------------------------------------------------------------------------------------------------
+
+## 설치
+
+1) JAVA SDK 설치 (17버전 다운로드)
+   - https://www.oracle.com/java/technologies/javase/jdk17-archive-downloads.html
+   - 환경변수
+     >> JAVA_HOME : C:\Program Files\Java\jdk-17
+     >> 시스템 변수 path : %JAVA_HOME%\bin
+   - cmd : java -version
+  
+
+2) KAFKA 3.8.0 버전 다운로드
+  - https://kafka.apache.org/community/downloads/    (3.8.0 버전)
+  - Binary Downloads에서 Kafka 바이너리 파일을 다운로드 : Scala 2.13 - kafka_2.13-3.8.0.tgz
+  - cd C:\kafka38 생성
+  - bin, config, libs등 압축푼 파일 전체를 위 경로에 넣기
+  - 환경 변수 path 추가 : C:\kafka38\bin
+
+---------------------------------------------------------------------------------------------------------
+
+## 실행 테스트
+
+3) ZooKeeper 실행 (cmd 창 1) <-- 관리자 모드로 실행
+ - cd C:\kafka38 
+ - bin\windows\zookeeper-server-start.bat config\zookeeper.properties 실행
+
+4) kafka broker 실행 (cmd 창 2)
+ - cd C:\kafka38 
+ - bin\windows\kafka-server-start.bat config\server.properties 실행
+
+5) Topic 생성 (cmd창 3)
+ - cd C:\kafka38
+ - bin\windows\kafka-topics.bat --create --topic press-force --bootstrap-server localhost:9092   
+   # press-force라는 토픽생성
+
+ * topic 확인
+ - bin\windows\kafka-topics.bat --list --bootstrap-server localhost:9092
+
+6) Producer 테스트 (cmd 창 4)
+ - cd C:\kafka38
+ - bin\windows\kafka-console-producer.bat --topic press-force --bootstrap-server localhost:9092
+   입력 
+    100
+    200
+    250
+    350
+
+7) Consumer 테스트 (cdm 창 5)
+ - cd C:\kafka38
+ - bin\windows\kafka-console-consumer.bat --topic press-force --from-beginning --bootstrap-server localhost:9092
+   결과
+   100
+    200
+    250
+    350  
+
+8) Python kafka-python 설치	(가상환경에서 설치)
+ - pip install kafka-python
+ - pip show kafka-python
+
+
+
+
+
+
+
+
+
+
+
+
+
+
