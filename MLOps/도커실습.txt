@@ -1,0 +1,221 @@
+---------------------------------------------------------------------------------------------------
+1. 우분투 설치 
+---------------------------------------------------------------------------------------------------
+
+# powershell 실행
+> wsl --install                   # 우분투 설치       (id/pass 설정)
+> wsl -l -v                        # 확인 (러닝, 버전)
+
+
+# 우분투 삭제 
+> wsl --unregister Ubuntu   # 우분투만 삭제
+> wsl --shutdown              # wsl 우분투
+> wsl                              # 우분투 재시작
+
+---------------------------------------------------------------------------------------------------
+2. 파이썬 설치 
+---------------------------------------------------------------------------------------------------
+# 우분투에서
+> sudo apt update
+> sudo apt install python3 python3-pip -y
+> python3 --version
+
+---------------------------------------------------------------------------------------------------
+3. Docker Desktop 설치 + WSL2 Integration 설정  <-- 여기서 컨테이너 실행
+---------------------------------------------------------------------------------------------------
+Docker Engine을 WSL에서 직접 사용 가능
+
+# Docker Desktop 다운
+ : https://www.docker.com/products/docker-desktop/?utm_source=chatgpt.com
+
+# 설정
+ : Docker Desktop → Settings → Resources → WSL Integration
+
+--> Enable integration with my default WSL distro
+--> Ubuntu 체크
+
+# 파워셀에서 확인
+> docker --version
+> docker run hello-world
+> docker ps
+
+========================================================
+4. 실습 환경 구성
+
+========================================================
+작업 경로
+Ubuntu WSL 내부: /home/bliss009/mlops-practice
+
+만들기
+$cd /home/human
+$mkdir -p ~/practice
+$cd ~/practice
+$sudo apt update
+
+$python3 -m venv venv                # 가상환경 만들기
+$source venv/bin/activate             # 가상환경 활성화
+
+# 가상환경 에러나면 파이썬 설치
+#sudo apt install python3.12-venv   
+$pip install fastapi uvicorn scikit-learn joblib numpy pandas seaborn matplotlib
+
+========================================================
+5. AI 모델 생성 실습
+========================================================
+1.  머신러닝 모델을 학습하고 결과(model.pkl)를 저장하는 과정
+
+$ vim make_model.py   # 코드 작성
+
+#make_model.py (학습 모델 생성)
+from sklearn.ensemble import RandomForestClassifier
+import numpy as np
+import joblib
+
+X = np.random.randn(200, 3)
+y = (X[:,0] + X[:,1] > 0).astype(int)
+
+model = RandomForestClassifier()
+model.fit(X, y)
+
+joblib.dump(model, "model.pkl")
+print("model.pkl 생성 완료!")
+
+
+# 실행
+$python make_model.py
+
+2. FastAPI 모델 서버 개발 실습
+:모델을 API로 감싸서 실제 서비스 형태로 만들기
+
+$ vim app.py
+## app.py
+from fastapi import FastAPI
+import joblib
+
+app = FastAPI()
+model = joblib.load("model.pkl")
+
+@app.get("/predict")
+def predict(f1: float, f2: float, f3: float):
+    pred = model.predict([[f1, f2, f3]])
+    return {"prediction": int(pred[0])}
+
+
+# app.py 실행
+$ uvicorn app:app --host 0.0.0.0 --port 8000
+
+
+# 브라우저 테스트
+http://localhost:8000/predict?f1=0.1&f2=-1&f3=2.5
+
+========================================================
+6. Dockerfile로 AI 모델 서버 패키징
+========================================================
+: 모델 + 서버 + 라이브러리를 이미지로 묶어 어디서든 실행 가능하게 만듦
+
+$ vim Dockerfile
+
+FROM python:3.10
+RUN pip install fastapi uvicorn scikit-learn joblib numpy pandas seaborn matplotlib
+COPY app.py /app/app.py
+COPY model.pkl /app/model.pkl
+WORKDIR /app
+CMD ["uvicorn","app:app","--host","0.0.0.0","--port","8000"]
+
+$ cat Dockerfile  # 읽기모드로 내용 확인
+
+# 이미지 빌드
+$ sudo docker build -t ai/model:v1 .
+
+# Docker 모델 서버 실행 및 상태 확인
+$ sudo docker ps
+$ sudo docker run -d -p 8000:8000 ai/model:v1  # 도커 서버 실행
+$ sudo docker ps
+
+# 결과 테스트:
+http://localhost:8000/predict?f1=5.3&f2=-1&f3=8
+
+========================================================
+7. Docker 스케일링 실습 (K8s Deployment 유사 실습)
+=======================================================
+: 자동 복구 개념
+
+#  서버 3개 띄우기
+
+$ sudo docker stop 컨테이너 아이디   # <-- (8000 서버)
+$ sudo docker run -d -p 8001:8000 ai/model:v1
+$ sudo docker run -d -p 8002:8000 ai/model:v1
+$ sudo docker run -d -p 8003:8000 ai/model:v1
+$ sudo docker ps
+
+# 결과 테스트:
+http://localhost:8000/predict?f1=5.3&f2=-1&f3=8   <-- 실행 안됨
+http://localhost:8001/predict?f1=5.3&f2=-1&f3=8   <-- 실행됨
+http://localhost:8002/predict?f1=5.3&f2=-1&f3=8   <-- 실행됨
+http://localhost:8003/predict?f1=5.3&f2=-1&f3=8   <-- 실행됨
+
+=======================================================
+8. 실습—무중단 모델 업데이트 (Rolling Update)
+=======================================================
+: 무중단 모델 업데이트(Rolling Update)는 기존 버전의 애플리케이션 인스턴스(파드)를 
+새로운 버전의 인스턴스로 점진적으로 교체하여 서비스 중단 없이 업데이트를 수행하는 
+배포 방식입니다. 
+이 방식은 서버의 과부하를 방지하면서 안정적인 업데이트를 보장하며, 
+특히 쿠버네티스와 같은 컨테이너 오케스트레이션 도구에서 널리 사용
+
+- v1 → v2 모델 교체
+
+# 새로운 모델로 교체 (make_model_v2.py 생성)
+from sklearn.linear_model import LogisticRegression
+import numpy as np
+import joblib
+
+X = np.random.randn(200, 3)
+y = (X[:,0] + X[:,1] > 0).astype(int)
+
+model = LogisticRegression()
+model.fit(X, y)
+
+joblib.dump(model, "model.pkl")
+print("v2 모델 생성 완료!")
+
+# vim make_model_v2.py
+
+# v2 이미지 빌드
+$ sudo docker build -t ai/model:v2 .
+$ sudo docker ps   <-- 8001, 8002, 8003 서버 실행되고 있음
+
+# 기존 v1 컨테이너 하나씩 교체
+$ sudo docker stop 컨테이너 ID (8003)
+$ sudo docker run -d -p 8003:8000 ai/model:v2   <-- 새로운 모델로 교체
+
+# docker 종료
+$ docker stop $(docker ps -aq)
+=======================================================
+9. Docker Compose로 단일 명령 배포 실습
+=======================================================
+: 쿠버네티스의 Deployment + Service를 Docker Compose 1개 파일로 설명 및 실행
+# docker-compose.yml 생성
+
+version: '3'
+services:
+  model1:
+    image: ai/model:v1
+    ports:
+      - "8001:8000"
+  model2:
+    image: ai/model:v1
+    ports:
+      - "8002:8000"
+  model3:
+    image: ai/model:v1
+    ports:
+      - "8003:8000"
+
+# 실행  (기존 도커 종료됐는지 확인, 그렇지 않은 경우, 포트 충돌로 구동 안됨)
+$ sudo docker-compose up -d
+$ docker ps    # docker compose 한개로 묶여서 4개가 전체 실행되는지 확인
+
+종료
+$ sudo docker-compose down
+
