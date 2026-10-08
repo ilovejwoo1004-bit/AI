@@ -1,0 +1,119 @@
+#=========================================
+# 버전 네이밍 룰
+#========================================= 
+--> AI_Model_v1.0.1
+     - 버그 수정 : AI_Model_v1.0.2
+     - 기능 추가, 모델이 변경 : AI_Model_v1.1.1
+     - 80% 이상 기능 변경, ui가 대대적으로 변경 : AI_Model_v2.0.1  
+
+
+#=========================================
+# Git 기본 개념
+#=========================================
+
+Git이란? : Git은 코드 변경 이력을 관리하는 도구입니다.
+
+핵심 용어  용어	의미
+-Repository : 파일이나 디렉토리를 저장하는 저장소
+-Commit	변경사항 저장 기록
+-Branch	독립 작업 공간
+-Remote	GitHub 같은 원격 저장소
+-Push	로컬 코드를 원격 저장소에 업로드
+-Pull	원격 저장소 코드를 내려받기
+-Clone	원격 저장소 복사
+
+#=========================================
+# Git 설치 및 사용자 설정
+#=========================================
+
+-Windows 설치
+-Git 공식 사이트에서 Git for Windows 설치(https://git-scm.com/install/windows)
+-설치 후 Git Bash 실행
+-확인
+$>git version
+
+-기본 사용자 설정
+$>git config --global user.name "본인이름"
+$>git config --global user.email "본인이메일"
+$>git config --list   # 확인
+
+#=========================================
+# GitHub Repository 생성
+#=========================================
+
+-GitHub 로그인  (https://github.com/ilovejwoo1004-bit)
+-New Repository 클릭   
+-Repository 이름 입력   (<-- ai-model-cicd-practice)
+-Public 또는 Private 선택
+-Create Repository 클릭
+
+#=========================================
+# 기본 명령어
+#=========================================
+
+1. 프로젝트 폴더 생성
+$>mkdir ai-model-cicd-practice   <-- 작업폴더 지정
+$>cd ai-model-cicd-practice
+
+2. 원격저장소 등록
+$>git init
+$>git remote add origin https://github.com/ilovejwoo1004-bit/ai-model-cicd-practice.git
+$>git remote -v
+$>git branch
+$> git branch -d 브랜치명   # 브랜치 삭제
+
+3. git 초기화
+$>git init
+$>git branch -M main
+
+4. 원격저장소 파일 가져오기
+$>git pull origin main
+
+5. 파일생성
+-> 파일 업로드 및 생성
+**  우분투 wsl에 있는 파일 가져오기
+> cp -r /home/bliss/practice/Dockerfile /mnt/c/ai_model_cicd_practice   
+> cp -r /home/bliss/practice/* /mnt/c/ai_model_cicd_practice
+
+
+6. 상태확인
+$>git status
+
+7. 변경사항 추가
+$>git add README.md    # 개별파일 추가 
+$>git add .                    # 전체 추가
+$>git status
+
+8. commit
+$>git commit -m "first commit"
+
+9. 원격저장소 연결
+$>git remote add origin https://github.com/ilovejwoo1004-bit/ai-model-cicd-practice.git
+$>git remote -v  # 현재 등록된 remote 확인
+
+10. push
+$>git branch -M main
+$>git push -u origin main  
+
+#push 에러날 경우
+fatal: The current branch main has no upstream branch.
+To push the current branch and set the remote as upstream, use
+
+$> git pull origin main --rebase    # 패치 진행
+$> git push -u origin main
+
+
+11. push 에러 후 원격 저장소를 새로 설정하는 경우 - remote url 삭제 
+$>git remote remove origin  # 리모트 삭제
+$>git remote add origin https://github.com/본인계정/변경할레포지토리.git   # 리모트 재연결
+$>git remote -v
+$>git push -u origin main
+
+11.원격 저장소 최신 내용 가져오기
+# 처음 프로젝트를 받는 경우에는 clone으로 가져온다
+$>git clone https://github.com/ilovejwoo1004-bit/test.git
+$>git pull origin main
+
+# 충돌 없이 최신 파일만 받을때
+$>git fetch origin
+$>git reset --hard origin/main
